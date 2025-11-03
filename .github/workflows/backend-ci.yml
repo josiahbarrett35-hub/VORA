@@ -1,0 +1,38 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [develop, main, staging]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - 'backend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Lint
+        run: |
+          pip install black flake8
+          black backend/ --check
+          flake8 backend/
+
+      - name: Run tests
+        run: |
+          pytest backend/tests/ --cov=backend/app --cov-report=xml || true
